@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>球员头像编辑器</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>球员头像编辑器</h1>
+            <section class="section">
+                <h2>上传图片</h2>
+                <input type="file" id="uploadImage" accept="image/png,image/jpeg" />
+            </section>
+            <section class="section crop-section">
+                <h2>头像裁剪</h2>
+                <div id="originalContainer" class="image-container"></div>
+            </section>
+            <section class="section edit-section">
+                <h2>编辑设置</h2>
+
+                <div class="subsection">
+                    <h3>球员信息</h3>
+                    <div class="control-group">
+                        <label for="playerName">球员名字:</label>
+                        <input type="text" id="playerName" placeholder="输入名字" />
+                        <label for="namePosition">位置:</label>
+                        <select id="namePosition">
+                            <option value="top-left">顶部-左对齐</option>
+                            <option value="top-center">顶部-居中</option>
+                            <option value="top-right">顶部-右对齐</option>
+                            <option value="center-left">中部-左对齐</option>
+                            <option value="center-center" selected>中部-居中</option>
+                            <option value="center-right">中部-右对齐</option>
+                            <option value="bottom-left">底部-左对齐</option>
+                            <option value="bottom-center">底部-居中</option>
+                            <option value="bottom-right">底部-右对齐</option>
+                        </select>
+                        <label for="fontSize">字体大小(%):<span id="fontSizeValue">10%</span></label>
+                        <input type="range" id="fontSize" min="5" max="25" value="10" />
+                        <label for="fontFamily">中文字体:</label>
+                        <select id="fontFamily">
+                            <option value="北魏楷书" data-file="北魏楷书.ttf">北魏楷书</option>
+                            <option value="北魏体" data-file="北魏体.ttf">北魏体</option>
+                            <option value="经解楷" data-file="经解楷.ttf">经解楷</option>
+                            <option value="明朝" data-file="明朝.ttf">明朝</option>
+                            <option value="霜花大黑" data-file="霜花大黑.ttf">霜花大黑</option>
+                            <option value="像素物语" data-file="像素物语.ttf">像素物语</option>
+                        </select>
+                        <label for="customFont">上传字体:</label>
+                        <input type="file" id="customFont" accept=".ttf,.woff,.woff2" />
+                    </div>
+                    <div class="control-group">
+                        <label for="playerId">球员ID:</label>
+                        <input type="text" id="playerId" placeholder="可选" />
+                    </div>
+                    <div class="control-group">
+                        <label for="nameColor">名字颜色:</label>
+                        <input type="color" id="nameColor" value="#000000" />
+                    </div>
+                    <div class="control-group">
+                        <label for="useEnglishFont">英文单独显示:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="useEnglishFont" />
+                            <span class="slider"></span>
+                        </label>
+                        <label for="englishFont" style="margin-left:12px;">英文字体:</label>
+                        <select id="englishFont">
+                            <option value="PiccadillyPro" data-file="PiccadillyPro.otf">PiccadillyPro</option>
+                            <option value="protoslab" data-file="protoslab.otf">protoslab</option>
+                            <option value="PunktLTPro" data-file="PunktLTPro.otf">PunktLTPro</option>
+                            <option value="Richie" data-file="Richie.otf">Richie</option>
+                            <option value="Sawaddee" data-file="Sawaddee.otf">Sawaddee</option>
+                            <option value="Transport" data-file="Transport.otf">Transport</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>背景设置</h3>
+                    <div class="control-group">
+                        <label for="bgType">背景类型:</label>
+                        <select id="bgType">
+                            <option value="color">纯色</option>
+                            <option value="gradient">渐变</option>
+                            <option value="preset">国旗</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="bgColorControls">
+                        <label for="bgColor">颜色:</label><input type="color" id="bgColor" value="#ffffff" />
+                    </div>
+                    <div class="control-group hidden" id="bgGradientControls">
+                        <label for="bgGradientStart">起始颜色:</label><input type="color" id="bgGradientStart" value="#ffffff" />
+                        <label for="bgGradientEnd">结束颜色:</label><input type="color" id="bgGradientEnd" value="#000000" />
+                    </div>
+                    <div class="control-group hidden">
+                        <label for="flagSearch">搜索国旗:</label><input type="text" id="flagSearch" placeholder="输入国旗(中/英)" />
+                    </div>
+                    <div class="control-group hidden" id="bgPresetControls">
+                        <label for="bgPreset">选择国旗:</label><select id="bgPreset"></select>
+                    </div>
+                    <div class="control-group hidden" id="bgCustomControls">
+                        <label for="bgCustom">自定义背景:</label><input type="file" id="bgCustom" accept="image/*" />
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>尺寸设置</h3>
+                    <div class="control-group export-group">
+                        <label for="exportRatio">导出比例:</label>
+                        <select id="exportRatio">
+                            <option value="1:1">1:1</option>
+                            <option value="4:3">4:3</option>
+                            <option value="3:4">3:4</option>
+                            <option value="3:2">3:2</option>
+                            <option value="2:3">2:3</option>
+                            <option value="16:9">16:9</option>
+                            <option value="9:16">9:16</option>
+                        </select>
+                        <label for="exportWidth">宽(px):</label><input type="number" id="exportWidth" value="500" min="1" />
+                        <label for="exportHeight">高(px):</label><input type="number" id="exportHeight" value="500" min="1" />
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>图片变换</h3>
+                    <div class="control-group transform-group">
+                        <button id="rotateLeft">向左旋转</button>
+                        <button id="rotateRight">向右旋转</button>
+                        <button id="flipHorizontal">水平翻转</button>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>边框 & 圆角</h3>
+                    <div class="control-group">
+                        <label for="borderWidth">边框(%):<span id="borderWidthValue">0%</span></label><input type="range" id="borderWidth" min="0" max="50" value="0" />
+                        <label for="borderRadius">圆角(%):<span id="borderRadiusValue">25%</span></label><input type="range" id="borderRadius" min="0" max="50" value="25" />
+                        <label for="borderColor">颜色:</label><input type="color" id="borderColor" value="#000000" />
+                    </div>
+                </div>
+
+                <div class="subsection settings-group">
+                    <h3>用户配置</h3>
+                    <button id="saveSettings">保存配置</button>
+                    <button id="loadSettings">加载配置</button>
+                    <!-- 隐藏的配置文件输入，用于加载JSON配置 -->
+                    <input type="file" id="settingsFileInput" accept=".json" style="display:none" />
+                </div>
+
+                <button id="exportBtn" class="export-btn" type="button">导出图片</button>
+            </section>
+        </div>
+        <div class="preview-section">
+            <canvas id="finalCanvas"></canvas>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html> 
