@@ -129,4 +129,10 @@
 ## 依赖项 (Dependencies)
 
 *   [Interact.js](https://interactjs.io/): 用于实现裁剪框的拖放和调整大小功能。
-*   [Remixicon](https://remixicon.com/): 用于界面图标。 
+*   [Remixicon](https://remixicon.com/): 用于界面图标。
+
+## 作者信息与致谢 (Author & Credits)
+
+*   **作者 (Author):** ShineMiyo
+*   **联系方式 (Contact):** 849278533@qq.com
+*   **协助开发 (Developed with help from):** Trae, Cursor 
