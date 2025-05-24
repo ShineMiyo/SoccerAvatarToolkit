@@ -337,35 +337,50 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, w, h);
         } else if (type === 'preset') {
-            console.log('[renderFinalCanvas] Attempting preset background. bgImg:', bgImg);
+            console.log('[renderFinalCanvas] 尝试使用国旗背景. bgImg:', bgImg);
             if (bgImg && bgImg.complete) {
-                const side = Math.max(w, h);
-                const dx = (w - side) / 2;
-                const dy = (h - side) / 2;
-                console.log(`[renderFinalCanvas] Drawing preset image: w=${w}, h=${h}, side=${side}, dx=${dx}, dy=${dy}`);
                 try {
-                    ctx.drawImage(bgImg, dx, dy, side, side);
+                    // 修复国旗背景在非1:1比例下显示不全的问题
+                    // 使用cover模式，确保国旗完全覆盖画布
+                    const bgRatio = bgImg.width / bgImg.height;
+                    const canvasRatio = w / h;
+                    let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+                    
+                    if (canvasRatio > bgRatio) {
+                        // 画布比国旗更宽，以宽度为基准填满
+                        drawWidth = w;
+                        drawHeight = w / bgRatio;
+                        offsetY = (h - drawHeight) / 2;
+                    } else {
+                        // 画布比国旗更高，以高度为基准填满
+                        drawHeight = h;
+                        drawWidth = h * bgRatio;
+                        offsetX = (w - drawWidth) / 2;
+                    }
+                    
+                    ctx.drawImage(bgImg, offsetX, offsetY, drawWidth, drawHeight);
+                    console.log(`[renderFinalCanvas] 成功绘制国旗背景: offsetX=${offsetX}, offsetY=${offsetY}, width=${drawWidth}, height=${drawHeight}`);
                 } catch (drawError) {
-                    console.error('[renderFinalCanvas] Error drawing preset image:', drawError);
+                    console.error('[renderFinalCanvas] 绘制国旗背景失败:', drawError);
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, w, h);
                 }
             } else {
-                console.warn('[renderFinalCanvas] Preset type selected, but bgImg is invalid or not loaded:', bgImg);
+                console.warn('[renderFinalCanvas] 国旗图像未加载或无效:', bgImg);
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, w, h);
             }
         } else if (type === 'custom' && bgImg && bgImg.complete) {
-            console.log('[renderFinalCanvas] Drawing custom image.');
+            console.log('[renderFinalCanvas] 绘制自定义背景图像');
             try {
                 ctx.drawImage(bgImg, 0, 0, w, h);
             } catch (drawError) {
-                console.error('[renderFinalCanvas] Error drawing custom image:', drawError);
+                console.error('[renderFinalCanvas] 绘制自定义背景失败:', drawError);
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, w, h);
             }
         } else {
-            console.warn('[renderFinalCanvas] No valid background condition met or bgImg not ready. Falling back to white.');
+            console.warn('[renderFinalCanvas] 无有效背景或图像未就绪，使用白色背景');
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, w, h);
         }
@@ -381,19 +396,30 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         }
 
-        // 裁剪并绘制头像
+        // 裁剪并绘制头像 - 修复不同分辨率下的位置偏移问题
         const dispW2 = originalImg.offsetWidth;
         const dispH2 = originalImg.offsetHeight;
         const natW2 = originalImg.naturalWidth;
         const natH2 = originalImg.naturalHeight;
+        
+        // 获取裁剪框的位置和尺寸
         const left2 = parseFloat(cropBox.style.left);
         const top2 = parseFloat(cropBox.style.top);
         const width2 = parseFloat(cropBox.style.width);
         const height2 = parseFloat(cropBox.style.height);
-        const sx2 = left2 / dispW2 * natW2;
-        const sy2 = top2 / dispH2 * natH2;
-        const sw2 = width2 / dispW2 * natW2;
-        const sh2 = height2 / dispH2 * natH2;
+        
+        // 修复坐标计算，确保在不同分辨率下正确映射
+        // 计算显示图片与原始图片的缩放比例
+        const scaleX = natW2 / dispW2;
+        const scaleY = natH2 / dispH2;
+        
+        // 将裁剪框坐标转换为原始图片坐标
+        const sx2 = left2 * scaleX;
+        const sy2 = top2 * scaleY;
+        const sw2 = width2 * scaleX;
+        const sh2 = height2 * scaleY;
+        
+        // 计算头像绘制区域（减去边框）
         const cw = w - bw * 2;
         const ch = h - bw * 2;
 
@@ -621,20 +647,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // 预设背景
     bgPresetSelect.addEventListener('change', () => {
         const src = bgPresetSelect.value;
+        console.log('[bgPresetSelect] 选择国旗:', src);
+        
         if (src) {
-            const img = new Image();
-            img.crossOrigin = 'Anonymous';
-            img.onload = () => {
-                bgImg = img;
-                console.log('[bgPresetSelect onload] Preset image loaded, bgImg set:', bgImg);
+            // 先检查预加载的图像
+            if (flagImages[src]) {
+                console.log('[bgPresetSelect] 使用已加载的国旗图像:', src);
+                bgImg = flagImages[src];
                 updateAllPreviews();
-            };
-            img.onerror = () => {
-                console.error('加载国旗失败:', src);
-                bgImg = null;
-                updateAllPreviews();
-            };
-            img.src = src;
+            } else {
+                // 尝试重新加载
+                console.log('[bgPresetSelect] 尝试加载国旗图像:', src);
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    console.log('[bgPresetSelect] 国旗图像加载成功:', src);
+                    bgImg = img;
+                    flagImages[src] = img; // 缓存图像
+                    updateAllPreviews();
+                };
+                img.onerror = () => {
+                    console.error('[bgPresetSelect] 加载国旗失败:', src);
+                    alert(`国旗图像无法加载: ${src}，请确保图片文件存在`);
+                    bgImg = null;
+                    updateAllPreviews();
+                };
+                img.src = src;
+            }
         } else {
             bgImg = null;
             updateAllPreviews();
