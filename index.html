@@ -18,7 +18,10 @@
 <body>
     <div class="container">
         <div class="sidebar">
-            <h1>球员头像编辑器</h1>
+            <div class="sidebar-header">
+                <h1>球员头像编辑器</h1>
+                <button id="helpBtn" title="帮助"><i class="ri-question-line"></i></button>
+            </div>
             
             <section class="section">
                 <h2 class="collapsible">上传图片</h2>
@@ -230,23 +233,16 @@
             <canvas id="finalCanvas"></canvas>
         </div>
     </div>
+
+    <!-- 帮助弹窗 -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeHelpModal" class="modal-close-btn"><i class="ri-close-line"></i></button>
+            <div id="helpContent"></div>
+        </div>
+    </div>
+
+    <script src="js/marked.min.js"></script>
     <script src="js/script.js"></script>
-    <script>
-        // 添加折叠面板功能
-        document.addEventListener('DOMContentLoaded', () => {
-            const collapsibles = document.querySelectorAll('.collapsible');
-            
-            collapsibles.forEach(collapsible => {
-                // 默认展开第一个面板
-                if (collapsible !== collapsibles[0]) {
-                    collapsible.classList.add('collapsed');
-                }
-                
-                collapsible.addEventListener('click', () => {
-                    collapsible.classList.toggle('collapsed');
-                });
-            });
-        });
-    </script>
 </body>
 </html> 
