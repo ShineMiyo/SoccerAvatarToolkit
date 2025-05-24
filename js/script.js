@@ -37,6 +37,128 @@ document.addEventListener('DOMContentLoaded', () => {
     const englishFontSelect = document.getElementById('englishFont');
     const saveSettingsBtn = document.getElementById('saveSettings');
     const loadSettingsBtn = document.getElementById('loadSettings');
+    const settingsFileInput = document.getElementById('settingsFileInput');
+    
+    // 帮助弹窗相关元素
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelpModalBtn = document.getElementById('closeHelpModal');
+    const helpContent = document.getElementById('helpContent');
+
+    // 帮助说明 Markdown 内容
+    const helpMarkdownContent = `
+# 帮助说明
+
+欢迎使用图片编辑器！以下是一些基本操作指南：
+
+## 1. 上传图片
+
+- 点击"选择图片"按钮，或将图片文件拖拽到指定区域以上传你的原始图片。
+
+## 2. 调整参数
+
+### 2.1 文本
+- **玩家姓名**: 输入要显示在图片上的文字。
+- **名字位置**: 选择文字在图片上的九宫格位置。
+- **字体大小**: 调整文字相对于图片短边的百分比大小。
+- **字体选择**: 选择中文字体。
+- **使用英文字体**: 勾选后，可为名称中的英文字母和数字选择不同的字体。
+- **名字颜色**: 设置文字的颜色。
+
+### 2.2 背景
+- **背景类型**: 
+    - **纯色**: 选择一个颜色作为背景。
+    - **渐变**: 选择起始和结束颜色创建线性渐变背景。
+    - **预设**: 从列表中选择一个预设图案（如国旗）作为背景。可以通过搜索框快速查找。
+    - **自定义**: 上传你自己的图片作为背景。
+
+### 2.3 变换
+- **向左旋转**: 将图片逆时针旋转90度。
+- **向右旋转**: 将图片顺时针旋转90度。
+- **水平翻转**: 水平镜像图片。
+
+### 2.4 导出设置
+- **导出比例**: 选择常用的图片比例，或选择"自由"以自定义宽高。
+- **导出宽度/高度**: 设置最终导出图片的精确尺寸（最大2640px）。
+- **球员ID**: (可选) 输入球员ID，将用于默认文件名。
+
+### 2.5 边框
+- **边框宽度**: 设置边框的宽度，相对于图片短边的百分比。
+- **边框圆角**: 设置边框和图片内容的圆角半径，相对于图片短边的百分比。
+- **边框颜色**: 选择边框的颜色。
+
+## 3. 裁剪区域
+
+- 上传图片后，会出现一个裁剪框。
+- **拖动**: 直接拖动裁剪框以选择图片的显示部分。
+- **调整大小**: 拖动裁剪框的边缘或角落可以调整其大小，调整时会保持当前设定的导出比例。
+
+## 4. 导出图片
+
+- 完成所有调整后，点击"导出图片"按钮。
+- 图片将以PNG格式下载，文件名为"球员ID_球员姓名.png"或"image_export.png"（如果未提供ID和姓名）。
+
+## 5. 保存与加载配置
+
+- **保存配置**: 点击"保存配置"按钮，可以将当前所有设置（除上传的图片外）保存为一个 JSON 文件。
+- **加载配置**: 点击"加载配置"按钮，选择之前保存的 JSON 文件，可以恢复所有设置。
+
+## 快捷键 (暂未实现)
+
+- Ctrl + S: 保存配置
+- Ctrl + O: 加载配置
+- Ctrl + E: 导出图片
+
+如果遇到问题，请尝试刷新页面或检查浏览器控制台输出。
+`;
+
+    // 帮助弹窗逻辑
+    if (helpBtn) { // 确保按钮存在
+        helpBtn.addEventListener('click', async () => {
+            console.log("Help button clicked.");
+            try {
+                const response = await fetch('README.md');
+                console.log("README.md fetch response status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`无法加载帮助文档: ${response.statusText} (Status: ${response.status})`);
+                }
+                const readmeText = await response.text();
+                console.log("README.md content fetched successfully.");
+
+                // 检查 Marked.js 是否加载以及如何调用
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    console.log("Marked.js loaded, using window.marked.parse()");
+                    helpContent.innerHTML = window.marked.parse(readmeText);
+                } else if (window.marked && typeof window.marked === 'function') {
+                    // 兼容某些版本可能直接是 marked(string)
+                    console.log("Marked.js loaded, using window.marked() directly");
+                    helpContent.innerHTML = window.marked(readmeText);
+                } else {
+                    console.error('Marked.js (window.marked or window.marked.parse) is not available. Displaying as preformatted text.');
+                    helpContent.innerHTML = `<pre>${readmeText}</pre>`; // Fallback
+                }
+                helpModal.classList.remove('hidden');
+            } catch (error) {
+                console.error('加载或解析帮助文档失败:', error);
+                helpContent.textContent = `帮助内容加载或解析失败。请检查浏览器控制台获取更多信息。错误：${error.message}`;
+                helpModal.classList.remove('hidden');
+            }
+        });
+    }
+
+    if (closeHelpModalBtn) { // 确保关闭按钮存在
+        closeHelpModalBtn.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+    }
+
+    if (helpModal) { // 确保弹窗存在
+        helpModal.addEventListener('click', (event) => {
+            if (event.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+    }
 
     let originalImg = null;
     let cropBox = null;
@@ -159,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 保存/加载配置
     saveSettingsBtn.addEventListener('click', saveSettings);
     // 加载配置：弹出文件选择
-    const settingsFileInput = document.getElementById('settingsFileInput');
     loadSettingsBtn.addEventListener('click', () => settingsFileInput.click());
     settingsFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -239,12 +360,19 @@ document.addEventListener('DOMContentLoaded', () => {
         img.crossOrigin = 'Anonymous';
         img.src = src;
         img.onload = () => {
+            console.log(`[loadOriginalImage] 图片加载完成: ${img.naturalWidth}x${img.naturalHeight}`);
             originalImg = img;
             img.style.maxWidth = '100%';
             img.style.maxHeight = '100%';
             originalContainer.appendChild(img);
+            
+            // 直接设置裁剪框，现在使用固定尺寸不依赖clientWidth/Height
             setupCropBox();
             updateAllPreviews();
+        };
+        img.onerror = () => {
+            console.error('[loadOriginalImage] 图片加载失败');
+            alert('图片加载失败，请检查图片格式是否正确');
         };
     }
 
@@ -253,35 +381,90 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cropBox) cropBox.remove();
         cropBox = document.createElement('div');
         cropBox.className = 'crop-box';
-        const w = originalContainer.clientWidth;
-        const h = originalContainer.clientHeight;
+        
+        // 获取容器尺寸，如果为0则使用CSS默认值
+        let containerW = originalContainer.clientWidth || 260;
+        let containerH = originalContainer.clientHeight || 260;
+        
+        console.log(`[setupCropBox] 容器尺寸获取: client=${originalContainer.clientWidth}x${originalContainer.clientHeight}, 使用=${containerW}x${containerH}`);
+        
+        if (!originalImg) {
+            console.error('setupCropBox: originalImg is null');
+            return;
+        }
+        
+        const natW = originalImg.naturalWidth;
+        const natH = originalImg.naturalHeight;
+        
+        // 计算图片在容器中的实际显示尺寸和位置
+        const imgAspect = natW / natH;
+        const containerAspect = containerW / containerH;
+        
+        let displayW, displayH, imgOffsetX = 0, imgOffsetY = 0;
+        if (imgAspect > containerAspect) {
+            // 图片更宽，以容器宽度为准
+            displayW = containerW;
+            displayH = containerW / imgAspect;
+            imgOffsetY = (containerH - displayH) / 2;
+        } else {
+            // 图片更高，以容器高度为准
+            displayH = containerH;
+            displayW = containerH * imgAspect;
+            imgOffsetX = (containerW - displayW) / 2;
+        }
+        
         const [rw, rh] = exportRatioSelect.value.split(':').map(n => parseFloat(n));
         const aspect = rw / rh;
-        let cw, ch;
-        if (w / h > aspect) {
-            ch = h;
-            cw = h * aspect;
+        
+        // 在图片显示区域内计算裁剪框尺寸
+        let cropW, cropH;
+        if (displayW / displayH > aspect) {
+            cropH = displayH;
+            cropW = displayH * aspect;
         } else {
-            cw = w;
-            ch = w / aspect;
+            cropW = displayW;
+            cropH = displayW / aspect;
         }
-        // 裁剪框居中
-        cropBox.style.left = `${(w - cw) / 2}px`;
-        cropBox.style.top = `${(h - ch) / 2}px`;
-        cropBox.style.width = `${cw}px`;
-        cropBox.style.height = `${ch}px`;
+        
+        // 裁剪框相对于图片显示区域居中，然后加上图片在容器中的偏移
+        const cropLeft = imgOffsetX + (displayW - cropW) / 2;
+        const cropTop = imgOffsetY + (displayH - cropH) / 2;
+        
+        cropBox.style.left = `${cropLeft}px`;
+        cropBox.style.top = `${cropTop}px`;
+        cropBox.style.width = `${cropW}px`;
+        cropBox.style.height = `${cropH}px`;
+        
         originalContainer.appendChild(cropBox);
+        
+        // 定义裁剪框的移动限制区域（图片显示区域）
+        const restrictArea = {
+            x: imgOffsetX,
+            y: imgOffsetY,
+            width: displayW,
+            height: displayH
+        };
+        
         interact(cropBox).draggable({
-            modifiers: [interact.modifiers.restrictRect({ restriction: originalContainer, endOnly: true })],
+            modifiers: [interact.modifiers.restrictRect({ 
+                restriction: restrictArea, 
+                endOnly: true 
+            })],
             listeners: { move: dragMoveListener }
         }).resizable({
             modifiers: [
                 interact.modifiers.aspectRatio({ ratio: aspect }),
-                interact.modifiers.restrictEdges({ outer: originalContainer, endOnly: true })
+                interact.modifiers.restrictEdges({ 
+                    outer: restrictArea, 
+                    endOnly: true 
+                })
             ],
             edges: { left: true, right: true, bottom: true, top: true },
             listeners: { move: resizeMoveListener }
         });
+        
+        console.log(`[setupCropBox] 裁剪框设置完成: 容器(${containerW}x${containerH}), 图片显示(${displayW}x${displayH}), 偏移(${imgOffsetX},${imgOffsetY}), 裁剪框(${cropW}x${cropH}) at (${cropLeft},${cropTop})`);
+        
         updateAllPreviews();
     }
 
@@ -307,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 渲染最终画布
     function renderFinalCanvas() {
-        if (!originalImg || !cropBox) return;
+        // 即使没有图片也要显示预览
         const w = parseInt(exportWidthInput.value, 10);
         const h = parseInt(exportHeightInput.value, 10);
         finalCanvas.width = w;
@@ -396,41 +579,113 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         }
 
-        // 裁剪并绘制头像 - 修复不同分辨率下的位置偏移问题
-        const dispW2 = originalImg.offsetWidth;
-        const dispH2 = originalImg.offsetHeight;
-        const natW2 = originalImg.naturalWidth;
-        const natH2 = originalImg.naturalHeight;
-        
-        // 获取裁剪框的位置和尺寸
-        const left2 = parseFloat(cropBox.style.left);
-        const top2 = parseFloat(cropBox.style.top);
-        const width2 = parseFloat(cropBox.style.width);
-        const height2 = parseFloat(cropBox.style.height);
-        
-        // 修复坐标计算，确保在不同分辨率下正确映射
-        // 计算显示图片与原始图片的缩放比例
-        const scaleX = natW2 / dispW2;
-        const scaleY = natH2 / dispH2;
-        
-        // 将裁剪框坐标转换为原始图片坐标
-        const sx2 = left2 * scaleX;
-        const sy2 = top2 * scaleY;
-        const sw2 = width2 * scaleX;
-        const sh2 = height2 * scaleY;
-        
         // 计算头像绘制区域（减去边框）
         const cw = w - bw * 2;
         const ch = h - bw * 2;
 
-        ctx.save();
-        drawRoundedRect(ctx, bw, bw, cw, ch, Math.max(0, radius - bw));
-        ctx.clip();
-        ctx.translate(w / 2, h / 2);
-        if (isFlipped) ctx.scale(-1, 1);
-        ctx.rotate(rotation * Math.PI / 180);
-        ctx.drawImage(originalImg, sx2, sy2, sw2, sh2, -cw / 2, -ch / 2, cw, ch);
-        ctx.restore();
+        // 只有在有图片时才绘制头像
+        if (originalImg && cropBox) {
+            // 裁剪并绘制头像 - 修复坐标计算一致性问题
+            // 使用容器尺寸作为基准，确保与setupCropBox()中的计算一致
+            let containerW = originalContainer.clientWidth || 260;
+            let containerH = originalContainer.clientHeight || 260;
+            const natW = originalImg.naturalWidth;
+            const natH = originalImg.naturalHeight;
+            
+            // 获取裁剪框的位置和尺寸（这些是基于容器尺寸的）
+            const cropLeft = parseFloat(cropBox.style.left);
+            const cropTop = parseFloat(cropBox.style.top);
+            const cropWidth = parseFloat(cropBox.style.width);
+            const cropHeight = parseFloat(cropBox.style.height);
+            
+            console.log(`[renderFinalCanvas] 调试信息:`);
+            console.log(`  容器尺寸: client=${originalContainer.clientWidth}x${originalContainer.clientHeight}, 使用=${containerW}x${containerH}`);
+            console.log(`  原图尺寸: ${natW}x${natH}`);
+            console.log(`  裁剪框: left=${cropLeft}, top=${cropTop}, width=${cropWidth}, height=${cropHeight}`);
+            
+            // 计算图片在容器中的实际显示尺寸和位置
+            // 图片使用max-width/max-height: 100%，所以需要计算实际显示尺寸
+            const imgAspect = natW / natH;
+            const containerAspect = containerW / containerH;
+            
+            let displayW, displayH, offsetX = 0, offsetY = 0;
+            if (imgAspect > containerAspect) {
+                // 图片更宽，以容器宽度为准
+                displayW = containerW;
+                displayH = containerW / imgAspect;
+                offsetY = (containerH - displayH) / 2;
+            } else {
+                // 图片更高，以容器高度为准
+                displayH = containerH;
+                displayW = containerH * imgAspect;
+                offsetX = (containerW - displayW) / 2;
+            }
+            
+            console.log(`  图片显示尺寸: ${displayW}x${displayH}, 偏移: (${offsetX}, ${offsetY})`);
+            
+            // 将裁剪框坐标转换为相对于图片显示区域的坐标
+            const relativeLeft = cropLeft - offsetX;
+            const relativeTop = cropTop - offsetY;
+            
+            console.log(`  相对坐标: left=${relativeLeft}, top=${relativeTop}`);
+            
+            // 计算在原图中的裁剪区域
+            const scaleX = natW / displayW;
+            const scaleY = natH / displayH;
+            
+            console.log(`  缩放比例: scaleX=${scaleX}, scaleY=${scaleY}`);
+            
+            // 确保裁剪坐标不为负数且在图片范围内
+            const sx = Math.max(0, Math.min(relativeLeft * scaleX, natW));
+            const sy = Math.max(0, Math.min(relativeTop * scaleY, natH));
+            const sw = Math.max(0, Math.min(cropWidth * scaleX, natW - sx));
+            const sh = Math.max(0, Math.min(cropHeight * scaleY, natH - sy));
+            
+            console.log(`  最终裁剪区域: sx=${sx}, sy=${sy}, sw=${sw}, sh=${sh}`);
+            
+            // 确保裁剪区域有效
+            if (sw > 0 && sh > 0 && sx >= 0 && sy >= 0 && sx + sw <= natW && sy + sh <= natH) {
+                ctx.save();
+                drawRoundedRect(ctx, bw, bw, cw, ch, Math.max(0, radius - bw));
+                ctx.clip();
+                ctx.translate(w / 2, h / 2);
+                if (isFlipped) ctx.scale(-1, 1);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.drawImage(originalImg, sx, sy, sw, sh, -cw / 2, -ch / 2, cw, ch);
+                ctx.restore();
+                console.log(`[renderFinalCanvas] ✅ 成功绘制头像`);
+            } else {
+                console.error('[renderFinalCanvas] ❌ 裁剪区域无效:', {sx, sy, sw, sh, natW, natH});
+                // 显示错误占位符
+                ctx.save();
+                drawRoundedRect(ctx, bw, bw, cw, ch, Math.max(0, radius - bw));
+                ctx.clip();
+                ctx.fillStyle = '#ffcccc';
+                ctx.fillRect(bw, bw, cw, ch);
+                ctx.fillStyle = '#cc0000';
+                ctx.font = `${Math.min(cw, ch) / 15}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('裁剪区域错误', w / 2, h / 2);
+                ctx.restore();
+            }
+        } else {
+            console.log(`[renderFinalCanvas] 没有图片或裁剪框: originalImg=${!!originalImg}, cropBox=${!!cropBox}`);
+            // 没有图片时，显示占位符文本
+            ctx.save();
+            drawRoundedRect(ctx, bw, bw, cw, ch, Math.max(0, radius - bw));
+            ctx.clip();
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(bw, bw, cw, ch);
+            
+            // 绘制占位符文本
+            ctx.fillStyle = '#999';
+            ctx.font = `${Math.min(cw, ch) / 10}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('请上传头像图片', w / 2, h / 2);
+            ctx.restore();
+        }
 
         // 绘制文字（混合中英字体）
         const name = playerNameInput.value.trim();
@@ -701,4 +956,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化
     bgTypeSelect.dispatchEvent(new Event('change'));
     exportRatioSelect.dispatchEvent(new Event('change'));
+    
+    // 初始渲染预览画布
+    updateAllPreviews();
+
+    // 折叠面板功能 (保持不变，确保它在所有元素加载后执行)
+    const collapsibles = document.querySelectorAll('.collapsible');
+    console.log(`Found ${collapsibles.length} collapsible elements.`); 
+
+    collapsibles.forEach((collapsible, index) => {
+        const content = collapsible.nextElementSibling; // 获取紧邻的兄弟元素 (即 div.collapse-content)
+        if (!content || !content.classList.contains('collapse-content')) {
+            console.error('Collapsible element is not immediately followed by a .collapse-content div:', collapsible);
+            return; // 如果结构不符合预期，则跳过此项
+        }
+
+        // 默认展开第一个面板, 其他折叠
+        if (index !== 0) { 
+            collapsible.classList.add('collapsed');
+            // content.style.display = 'none'; // JS 直接控制隐藏
+            content.classList.add('panel-content-hidden');
+            content.classList.remove('panel-content-visible');
+        } else {
+            collapsible.classList.remove('collapsed'); 
+            // content.style.setProperty('display', 'block', 'important');
+            content.classList.add('panel-content-visible');
+            content.classList.remove('panel-content-hidden');
+        }
+        
+        collapsible.addEventListener('click', function() { 
+            const currentContent = this.nextElementSibling; 
+            if (!currentContent || !currentContent.classList.contains('collapse-content')) {
+                console.error('CRITICAL ERROR: Collapsible element clicked, but its immediate next sibling is not a .collapse-content div. Structure might be broken.', this);
+                return; 
+            }
+
+            console.log(`Collapsible element clicked:`, this.textContent.trim()); 
+            this.classList.toggle('collapsed');
+            const isCollapsed = this.classList.contains('collapsed');
+            console.log(`Header for '${this.textContent.trim()}' is now collapsed: ${isCollapsed}`);
+            
+            if (isCollapsed) {
+                // currentContent.style.setProperty('display', 'none', 'important');
+                currentContent.classList.add('panel-content-hidden');
+                currentContent.classList.remove('panel-content-visible');
+            } else {
+                // currentContent.style.setProperty('display', 'block', 'important');
+                currentContent.classList.add('panel-content-visible');
+                currentContent.classList.remove('panel-content-hidden');
+            }
+
+            void currentContent.offsetHeight; 
+
+            console.log(`   Content for '${this.textContent.trim()}' class update attempt. Classes: '${currentContent.className}', ComputedDisplay: '${window.getComputedStyle(currentContent).display}', OffsetHeight: ${currentContent.offsetHeight}`);
+        });
+    });
+    console.log("Collapsible event listeners with class-based manipulation and reflow attempt attached.");
 });
