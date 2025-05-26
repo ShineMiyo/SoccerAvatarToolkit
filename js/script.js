@@ -226,49 +226,454 @@ document.addEventListener('DOMContentLoaded', () => {
 
     [bgColorInput, bgGradientStart, bgGradientEnd].forEach(el => el.addEventListener('input', updateAllPreviews));
 
-    // 预设国旗列表（仅保留已有文件）
-    const presetFlags = [
-        { name: '中国', src: 'Nation/CN.png' },
-        { name: '德国', src: 'Nation/DE.png' },
-        { name: '法国', src: 'Nation/FR.png' },
-        { name: '英国', src: 'Nation/GB.png' },
-        { name: '日本', src: 'Nation/JP.png' },
-        { name: '韩国', src: 'Nation/KR.png' },
-        { name: '朝鲜', src: 'Nation/KP.png' }
-    ];
+    // 国旗对应的中文名称映射 - 只包含实际存在的文件
+    const flagNameMapping = {
+        'AD': '安道尔',
+        'AE': '阿联酋', 
+        'AF': '阿富汗',
+        'AG': '安提瓜和巴布达',
+        'AL': '阿尔巴尼亚',
+        'AO': '安哥拉',
+        'AR': '阿根廷',
+        'AT': '奥地利',
+        'AZ': '阿塞拜疆',
+        'BA': '波黑',
+        'BD': '孟加拉国',
+        'BE': '比利时',
+        'BF': '布基纳法索',
+        'BG': '保加利亚',
+        'BH': '巴林',
+        'BI': '布隆迪',
+        'BJ': '贝宁',
+        'BM': '百慕大',
+        'BN': '文莱',
+        'BR': '巴西',
+        'BS': '巴哈马',
+        'BW': '博茨瓦纳',
+        'BY': '白俄罗斯',
+        'BZ': '伯利兹',
+        'CA': '加拿大',
+        'CF': '中非',
+        'CG': '刚果(布)',
+        'CH': '瑞士',
+        'CI': '科特迪瓦',
+        'CL': '智利',
+        'CM': '喀麦隆',
+        'CN': '中国',
+        'CO': '哥伦比亚',
+        'CR': '哥斯达黎加',
+        'CU': '古巴',
+        'CV': '佛得角',
+        'CY': '塞浦路斯',
+        'CZ': '捷克',
+        'DE': '德国',
+        'DJ': '吉布提',
+        'DK': '丹麦',
+        'DM': '多米尼加',
+        'DZ': '阿尔及利亚',
+        'EC': '厄瓜多尔',
+        'EE': '爱沙尼亚',
+        'EG': '埃及',
+        'ER': '厄立特里亚',
+        'ES': '西班牙',
+        'ET': '埃塞俄比亚',
+        'FI': '芬兰',
+        'FK': '福克兰群岛',
+        'FR': '法国',
+        'GA': '加蓬',
+        'GB': '英国',
+        'GH': '加纳',
+        'GL': '格陵兰',
+        'GM': '冈比亚',
+        'GN': '几内亚',
+        'GQ': '赤道几内亚',
+        'GR': '希腊',
+        'GT': '危地马拉',
+        'GW': '几内亚比绍',
+        'GY': '圭亚那',
+        'HN': '洪都拉斯',
+        'HR': '克罗地亚',
+        'HT': '海地',
+        'HU': '匈牙利',
+        'ID': '印度尼西亚',
+        'IE': '爱尔兰',
+        'IL': '以色列',
+        'IN': '印度',
+        'IQ': '伊拉克',
+        'IR': '伊朗',
+        'IS': '冰岛',
+        'IT': '意大利',
+        'JM': '牙买加',
+        'JO': '约旦',
+        'JP': '日本',
+        'KE': '肯尼亚',
+        'KG': '吉尔吉斯斯坦',
+        'KH': '柬埔寨',
+        'KM': '科摩罗',
+        'KN': '圣基茨和尼维斯',
+        'KP': '朝鲜',
+        'KR': '韩国',
+        'KW': '科威特',
+        'KZ': '哈萨克斯坦',
+        'LA': '老挝',
+        'LB': '黎巴嫩',
+        'LC': '圣卢西亚',
+        'LI': '列支敦士登',
+        'LK': '斯里兰卡',
+        'LR': '利比里亚',
+        'LS': '莱索托',
+        'LT': '立陶宛',
+        'LU': '卢森堡',
+        'LV': '拉脱维亚',
+        'LY': '利比亚',
+        'MA': '摩洛哥',
+        'MD': '摩尔多瓦',
+        'MG': '马达加斯加',
+        'ML': '马里',
+        'MM': '缅甸',
+        'MN': '蒙古',
+        'MT': '马耳他',
+        'MU': '毛里求斯',
+        'MV': '马尔代夫',
+        'MW': '马拉维',
+        'MX': '墨西哥',
+        'MY': '马来西亚',
+        'NA': '纳米比亚',
+        'NE': '尼日尔',
+        'NG': '尼日利亚',
+        'NI': '尼加拉瓜',
+        'NL': '荷兰',
+        'NO': '挪威',
+        'NP': '尼泊尔',
+        'OM': '阿曼',
+        'PA': '巴拿马',
+        'PE': '秘鲁',
+        'PH': '菲律宾',
+        'PK': '巴基斯坦',
+        'PL': '波兰',
+        'PS': '巴勒斯坦',
+        'PT': '葡萄牙',
+        'PY': '巴拉圭',
+        'QA': '卡塔尔',
+        'RO': '罗马尼亚',
+        'RS': '塞尔维亚',
+        'RU': '俄罗斯',
+        'RW': '卢旺达',
+        'SA': '沙特阿拉伯',
+        'SC': '塞舌尔',
+        'SD': '苏丹',
+        'SE': '瑞典',
+        'SG': '新加坡',
+        'SI': '斯洛文尼亚',
+        'SK': '斯洛伐克',
+        'SL': '塞拉利昂',
+        'SM': '圣马力诺',
+        'SN': '塞内加尔',
+        'SO': '索马里',
+        'SR': '苏里南',
+        'ST': '圣多美和普林西比',
+        'SV': '萨尔瓦多',
+        'SY': '叙利亚',
+        'SZ': '斯威士兰',
+        'TG': '多哥',
+        'TH': '泰国',
+        'TJ': '塔吉克斯坦',
+        'TM': '土库曼斯坦',
+        'TN': '突尼斯',
+        'TR': '土耳其',
+        'TT': '特立尼达和多巴哥',
+        'TZ': '坦桑尼亚',
+        'UA': '乌克兰',
+        'UG': '乌干达',
+        'US': '美国',
+        'UY': '乌拉圭',
+        'UZ': '乌兹别克斯坦',
+        'VA': '梵蒂冈',
+        'VC': '圣文森特和格林纳丁斯',
+        'VE': '委内瑞拉',
+        'VN': '越南',
+        'YE': '也门',
+        'ZA': '南非',
+        'ZM': '赞比亚',
+        'ZW': '津巴布韦'
+    };
+
+    // 大洲分类映射
+    const continentMapping = {
+        '亚洲': ['AE', 'AF', 'AZ', 'BH', 'BD', 'BN', 'KH', 'CN', 'CY', 'GE', 'IN', 'ID', 'IR', 'IQ', 'IL', 'JP', 'JO', 'KZ', 'KP', 'KR', 'KW', 'KG', 'LA', 'LB', 'MV', 'MY', 'MN', 'MM', 'NP', 'OM', 'PK', 'PS', 'PH', 'QA', 'SA', 'SG', 'LK', 'SY', 'TW', 'TJ', 'TH', 'TL', 'TR', 'TM', 'AE', 'UZ', 'VN', 'YE'],
+        '欧洲': ['AL', 'AD', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BA', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'GE', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'KZ', 'LV', 'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'MK', 'NO', 'PL', 'PT', 'RO', 'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', 'CH', 'TR', 'UA', 'GB', 'VA'],
+        '非洲': ['DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CV', 'CM', 'CF', 'TD', 'KM', 'CG', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'SZ', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'MA', 'MZ', 'NA', 'NE', 'NG', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS', 'SD', 'TZ', 'TG', 'TN', 'UG', 'ZM', 'ZW'],
+        '北美洲': ['AG', 'BS', 'BB', 'BZ', 'CA', 'CR', 'CU', 'DM', 'SV', 'GL', 'GD', 'GT', 'HT', 'HN', 'JM', 'MX', 'NI', 'PA', 'KN', 'LC', 'VC', 'TT', 'US'],
+        '南美洲': ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'FK', 'GF', 'GY', 'PY', 'PE', 'SR', 'UY', 'VE'],
+        '大洋洲': ['AU', 'FJ', 'KI', 'MH', 'FM', 'NR', 'NZ', 'PW', 'PG', 'WS', 'SB', 'TO', 'TV', 'VU']
+    };
+
+    // 从实际文件生成国旗选项
+    let availableFlags = [];
+    let presetFlags = {};
+
+    // 动态检测可用国旗文件
+    async function detectAvailableFlags() {
+        const fileList = [
+            'AD', 'AE', 'AF', 'AG', 'AL', 'AO', 'AR', 'AT', 'AZ', 'BA', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BM', 'BN', 'BR', 'BS', 'BW', 'BY', 'BZ', 'CA', 'CF', 'CG', 'CH', 'CI', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DZ', 'EC', 'EE', 'EG', 'ER', 'ES', 'ET', 'FI', 'FK', 'FR', 'GA', 'GB', 'GH', 'GL', 'GM', 'GN', 'GQ', 'GR', 'GT', 'GW', 'GY', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IN', 'IQ', 'IR', 'IS', 'IT', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KM', 'KN', 'KP', 'KR', 'KW', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MD', 'MG', 'ML', 'MM', 'MN', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'NA', 'NE', 'NG', 'NI', 'NL', 'NO', 'NP', 'OM', 'PA', 'PE', 'PH', 'PK', 'PL', 'PS', 'PT', 'PY', 'QA', 'RO', 'RS', 'RU', 'RW', 'SA', 'SC', 'SD', 'SE', 'SG', 'SI', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'ST', 'SV', 'SY', 'SZ', 'TG', 'TH', 'TJ', 'TM', 'TN', 'TR', 'TT', 'TZ', 'UA', 'UG', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VN', 'YE', 'ZA', 'ZM', 'ZW'
+        ];
+
+        const existingFlags = [];
+        
+        // 并发检测文件是否存在
+        const checkPromises = fileList.map(code => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    if (flagNameMapping[code]) {
+                        existingFlags.push({
+                            name: flagNameMapping[code],
+                            code: code,
+                            src: `Nation/${code}.png`
+                        });
+                    }
+                    resolve();
+                };
+                img.onerror = () => {
+                    console.warn(`国旗文件不存在: Nation/${code}.png`);
+                    resolve();
+                };
+                img.src = `Nation/${code}.png`;
+            });
+        });
+
+        await Promise.all(checkPromises);
+        
+        // 按大洲分类现有国旗
+        presetFlags = {};
+        Object.keys(continentMapping).forEach(continent => {
+            presetFlags[continent] = [];
+            
+            continentMapping[continent].forEach(code => {
+                const flag = existingFlags.find(f => f.code === code);
+                if (flag) {
+                    presetFlags[continent].push(flag);
+                }
+            });
+            
+            // 按中文名称排序
+            presetFlags[continent].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+            
+            // 如果该大洲没有国旗，删除该分类
+            if (presetFlags[continent].length === 0) {
+                delete presetFlags[continent];
+            }
+        });
+
+        console.log(`检测到 ${existingFlags.length} 个有效国旗文件`);
+        console.log('按大洲分类:', presetFlags);
+        
+        return existingFlags;
+    }
+
     // 预加载国旗图片
     const flagImages = {};
-    presetFlags.forEach(flag => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => { flagImages[flag.src] = img; };
-        img.onerror = () => console.error('国旗预加载失败', flag.src);
-        img.src = flag.src;
-    });
-    presetFlags.forEach(flag => {
-        const opt = document.createElement('option');
-        opt.value = flag.src;
-        opt.textContent = flag.name;
-        bgPresetSelect.append(opt);
-    });
-    if (presetFlags.length) {
-        bgPresetSelect.value = presetFlags[0].src;
-        bgPresetSelect.dispatchEvent(new Event('change'));
+    let loadedFlags = 0;
+    let totalFlags = 0;
+
+    async function preloadFlags() {
+        availableFlags = await detectAvailableFlags();
+        totalFlags = availableFlags.length;
+        
+        // 预加载所有可用国旗
+        const loadPromises = availableFlags.map(flag => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => { 
+                    flagImages[flag.src] = img; 
+                    loadedFlags++;
+                    console.log(`国旗加载成功: ${flag.name} (${loadedFlags}/${totalFlags})`);
+                    resolve();
+                };
+                img.onerror = () => {
+                    console.warn(`国旗加载失败: ${flag.name} - ${flag.src}`);
+                    loadedFlags++;
+                    // 创建占位符图像
+                    const placeholderImg = new Image();
+                    placeholderImg.width = 32;
+                    placeholderImg.height = 24;
+                    flagImages[flag.src] = placeholderImg;
+                    resolve();
+                };
+                img.src = flag.src;
+            });
+        });
+
+        await Promise.all(loadPromises);
+        
+        // 生成选择器选项
+        populateFlagSelector();
+        
+        console.log(`✅ 所有国旗预加载完成: ${loadedFlags}/${totalFlags}`);
     }
+
+    // 生成分组的国旗选择器选项
+    function populateFlagSelector() {
+        bgPresetSelect.innerHTML = '';
+        
+        Object.keys(presetFlags).forEach(continent => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = continent;
+            
+            presetFlags[continent].forEach(flag => {
+                const option = document.createElement('option');
+                option.value = flag.src;
+                option.textContent = flag.name;
+                option.setAttribute('data-continent', continent);
+                option.setAttribute('data-code', flag.code);
+                optgroup.appendChild(option);
+            });
+            
+            bgPresetSelect.appendChild(optgroup);
+        });
+        
+        // 默认选择中国（如果存在）
+        if (bgPresetSelect.options.length > 0) {
+            const chinaOption = bgPresetSelect.querySelector('option[data-code="CN"]');
+            if (chinaOption) {
+                bgPresetSelect.value = chinaOption.value;
+            } else {
+                bgPresetSelect.value = bgPresetSelect.options[0].value;
+            }
+        bgPresetSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // 添加下拉列表滚动位置控制
+        setupSelectScrollControl();
+    }
+
+    // 将选中的选项滚动到可见区域的底部
+    function scrollToSelectedOption() {
+        const selectedOption = bgPresetSelect.options[bgPresetSelect.selectedIndex];
+        if (!selectedOption) return;
+
+        try {
+            // 使用现代浏览器的 scrollIntoView API 获得更精确的控制
+            if (selectedOption.scrollIntoView) {
+                selectedOption.scrollIntoView({
+                    behavior: 'instant', // 立即滚动，不使用动画
+                    block: 'end',        // 将选项滚动到可见区域的底部
+                    inline: 'nearest'    // 水平方向保持最近位置
+                });
+                console.log(`[scrollToSelectedOption] 使用scrollIntoView成功: ${selectedOption.textContent}`);
+            } else {
+                // 回退方案：手动计算滚动位置
+                const selectRect = bgPresetSelect.getBoundingClientRect();
+                const optionHeight = 20; // 估算的选项高度
+                const visibleOptions = Math.floor(selectRect.height / optionHeight);
+                const selectedIndex = bgPresetSelect.selectedIndex;
+                const targetScrollTop = Math.max(0, (selectedIndex - visibleOptions + 2) * optionHeight);
+                
+                bgPresetSelect.scrollTop = targetScrollTop;
+                console.log(`[scrollToSelectedOption] 使用回退方案: selectedIndex=${selectedIndex}, scrollTop=${targetScrollTop}`);
+            }
+        } catch (error) {
+            console.warn('[scrollToSelectedOption] 滚动设置失败:', error);
+        }
+    }
+
+    // 防抖动函数
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // 设置下拉列表滚动控制
+    function setupSelectScrollControl() {
+        // 创建防抖动的滚动函数
+        const debouncedScroll = debounce(scrollToSelectedOption, 50);
+
+        // 防止鼠标移动导致的意外滚动
+        bgPresetSelect.addEventListener('mouseenter', (e) => {
+            e.target.blur(); // 移除焦点，防止键盘滚动
+        });
+
+        // 监听下拉列表打开事件（鼠标点击）
+        bgPresetSelect.addEventListener('mousedown', (e) => {
+            // 延迟执行，确保下拉列表已经完全打开并渲染
+            setTimeout(() => {
+                debouncedScroll();
+            }, 100);
+        });
+
+        // 监听聚焦事件（键盘或代码触发）
+        bgPresetSelect.addEventListener('focus', (e) => {
+            setTimeout(() => {
+                debouncedScroll();
+            }, 100);
+        });
+
+        // 监听键盘打开事件
+        bgPresetSelect.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                setTimeout(() => {
+                    debouncedScroll();
+                }, 50);
+            }
+        });
+
+        // 添加选择变化监听（当用户选择不同选项时）
+        bgPresetSelect.addEventListener('change', (e) => {
+            // 在下次打开时记住新的选择
+            bgPresetSelect.setAttribute('data-last-selected', bgPresetSelect.selectedIndex);
+        });
+
+        console.log('[setupSelectScrollControl] 下拉列表滚动控制已设置');
+    }
+
+    // 启动国旗检测和预加载
+    preloadFlags().catch(console.error);
 
     // 国旗搜索
     flagSearchInput.addEventListener('input', () => {
         const kw = flagSearchInput.value.trim().toLowerCase();
         bgPresetSelect.innerHTML = '';
-        presetFlags.forEach(flag => {
-            if (flag.name.toLowerCase().includes(kw) || flag.src.toLowerCase().includes(kw)) {
-                const opt = document.createElement('option');
-                opt.value = flag.src;
-                opt.textContent = flag.name;
-                bgPresetSelect.append(opt);
+        
+        if (!kw) {
+            // 如果搜索为空，显示所有国旗
+            populateFlagSelector();
+            return;
+        }
+        
+        // 搜索匹配的国旗，按大洲分组显示
+        Object.keys(presetFlags).forEach(continent => {
+            const matchedFlags = presetFlags[continent].filter(flag => 
+                flag.name.toLowerCase().includes(kw) || 
+                flag.code.toLowerCase().includes(kw) ||
+                continent.toLowerCase().includes(kw)
+            );
+            
+            if (matchedFlags.length > 0) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = continent;
+                
+                matchedFlags.forEach(flag => {
+                    const option = document.createElement('option');
+                    option.value = flag.src;
+                    option.textContent = flag.name;
+                    option.setAttribute('data-continent', continent);
+                    option.setAttribute('data-code', flag.code);
+                    optgroup.appendChild(option);
+                });
+                
+                bgPresetSelect.appendChild(optgroup);
             }
         });
-        if (bgPresetSelect.options.length) {
+        
+        if (bgPresetSelect.options.length > 0) {
             bgPresetSelect.value = bgPresetSelect.options[0].value;
             bgPresetSelect.dispatchEvent(new Event('change'));
         }
