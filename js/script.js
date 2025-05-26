@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'AT': '奥地利',
         'AZ': '阿塞拜疆',
         'BA': '波黑',
-        'BD': '孟加拉国',
+        'BD': '孟加拉国',   
         'BE': '比利时',
         'BF': '布基纳法索',
         'BG': '保加利亚',
@@ -247,12 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
         'BJ': '贝宁',
         'BM': '百慕大',
         'BN': '文莱',
+        'BO': '玻利维亚',
         'BR': '巴西',
         'BS': '巴哈马',
         'BW': '博茨瓦纳',
         'BY': '白俄罗斯',
         'BZ': '伯利兹',
         'CA': '加拿大',
+        'CD': '刚果(金)',
         'CF': '中非',
         'CG': '刚果(布)',
         'CH': '瑞士',
@@ -282,6 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'FR': '法国',
         'GA': '加蓬',
         'GB': '英国',
+        'GD': '格林纳达',
+        'GE': '格鲁吉亚',
         'GH': '加纳',
         'GL': '格陵兰',
         'GM': '冈比亚',
@@ -328,16 +332,21 @@ document.addEventListener('DOMContentLoaded', () => {
         'LY': '利比亚',
         'MA': '摩洛哥',
         'MD': '摩尔多瓦',
+        'ME': '黑山',
         'MG': '马达加斯加',
+        'MK': '北马其顿',
         'ML': '马里',
         'MM': '缅甸',
         'MN': '蒙古',
+        'MO': '中国澳门',
+        'MR': '毛里塔尼亚',
         'MT': '马耳他',
         'MU': '毛里求斯',
         'MV': '马尔代夫',
         'MW': '马拉维',
         'MX': '墨西哥',
         'MY': '马来西亚',
+        'MZ': '莫桑比克',
         'NA': '纳米比亚',
         'NE': '尼日尔',
         'NG': '尼日利亚',
@@ -351,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'PH': '菲律宾',
         'PK': '巴基斯坦',
         'PL': '波兰',
+        'PR': '波多黎各',
         'PS': '巴勒斯坦',
         'PT': '葡萄牙',
         'PY': '巴拉圭',
@@ -378,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'TG': '多哥',
         'TH': '泰国',
         'TJ': '塔吉克斯坦',
+        'TL': '东帝汶',
         'TM': '土库曼斯坦',
         'TN': '突尼斯',
         'TR': '土耳其',
@@ -402,8 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const continentMapping = {
         '亚洲': ['AE', 'AF', 'AZ', 'BH', 'BD', 'BN', 'KH', 'CN', 'CY', 'GE', 'IN', 'ID', 'IR', 'IQ', 'IL', 'JP', 'JO', 'KZ', 'KP', 'KR', 'KW', 'KG', 'LA', 'LB', 'MV', 'MY', 'MN', 'MM', 'NP', 'OM', 'PK', 'PS', 'PH', 'QA', 'SA', 'SG', 'LK', 'SY', 'TW', 'TJ', 'TH', 'TL', 'TR', 'TM', 'AE', 'UZ', 'VN', 'YE'],
         '欧洲': ['AL', 'AD', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BA', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'GE', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'KZ', 'LV', 'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'MK', 'NO', 'PL', 'PT', 'RO', 'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', 'CH', 'TR', 'UA', 'GB', 'VA'],
-        '非洲': ['DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CV', 'CM', 'CF', 'TD', 'KM', 'CG', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'SZ', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'MA', 'MZ', 'NA', 'NE', 'NG', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS', 'SD', 'TZ', 'TG', 'TN', 'UG', 'ZM', 'ZW'],
-        '北美洲': ['AG', 'BS', 'BB', 'BZ', 'CA', 'CR', 'CU', 'DM', 'SV', 'GL', 'GD', 'GT', 'HT', 'HN', 'JM', 'MX', 'NI', 'PA', 'KN', 'LC', 'VC', 'TT', 'US'],
+        '非洲': ['DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CV', 'CD' ,'CM', 'CF', 'TD', 'KM', 'CG', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'SZ', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'MA', 'MZ', 'NA', 'NE', 'NG', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS', 'SD', 'TZ', 'TG', 'TN', 'UG', 'ZM', 'ZW'],
+        '北美洲': ['AG', 'BS', 'BB', 'BZ', 'CA', 'CR', 'CU', 'DM', 'SV', 'GL', 'GD', 'GT', 'HT', 'HN', 'JM', 'MX', 'NI', 'PA', 'PR', 'KN', 'LC', 'VC', 'TT', 'US'],
         '南美洲': ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'FK', 'GF', 'GY', 'PY', 'PE', 'SR', 'UY', 'VE'],
         '大洋洲': ['AU', 'FJ', 'KI', 'MH', 'FM', 'NR', 'NZ', 'PW', 'PG', 'WS', 'SB', 'TO', 'TV', 'VU']
     };
@@ -415,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 动态检测可用国旗文件
     async function detectAvailableFlags() {
         const fileList = [
-            'AD', 'AE', 'AF', 'AG', 'AL', 'AO', 'AR', 'AT', 'AZ', 'BA', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BM', 'BN', 'BR', 'BS', 'BW', 'BY', 'BZ', 'CA', 'CF', 'CG', 'CH', 'CI', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DZ', 'EC', 'EE', 'EG', 'ER', 'ES', 'ET', 'FI', 'FK', 'FR', 'GA', 'GB', 'GH', 'GL', 'GM', 'GN', 'GQ', 'GR', 'GT', 'GW', 'GY', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IN', 'IQ', 'IR', 'IS', 'IT', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KM', 'KN', 'KP', 'KR', 'KW', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MD', 'MG', 'ML', 'MM', 'MN', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'NA', 'NE', 'NG', 'NI', 'NL', 'NO', 'NP', 'OM', 'PA', 'PE', 'PH', 'PK', 'PL', 'PS', 'PT', 'PY', 'QA', 'RO', 'RS', 'RU', 'RW', 'SA', 'SC', 'SD', 'SE', 'SG', 'SI', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'ST', 'SV', 'SY', 'SZ', 'TG', 'TH', 'TJ', 'TM', 'TN', 'TR', 'TT', 'TZ', 'UA', 'UG', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VN', 'YE', 'ZA', 'ZM', 'ZW'
+            'AD', 'AE', 'AF', 'AG', 'AL', 'AO', 'AR', 'AT', 'AZ', 'BA', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BM', 'BN', 'BO' , 'BR', 'BS', 'BW', 'BY', 'BZ', 'CA', 'CD' , 'CF', 'CG', 'CH', 'CI', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DZ', 'EC', 'EE', 'EG', 'ER', 'ES', 'ET', 'FI', 'FK', 'FR', 'GA', 'GB', 'GD' , 'GE' , 'GH', 'GL', 'GM', 'GN', 'GQ', 'GR', 'GT', 'GW', 'GY', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IN', 'IQ', 'IR', 'IS', 'IT', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KM', 'KN', 'KP', 'KR', 'KW', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MD', 'ME' , 'MG', 'MK' , 'ML', 'MM', 'MN', 'MR' , 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ' , 'NA', 'NE', 'NG', 'NI', 'NL', 'NO', 'NP', 'OM', 'PA', 'PE', 'PH', 'PK', 'PL', 'PR' , 'PS', 'PT', 'PY', 'QA', 'RO', 'RS', 'RU', 'RW', 'SA', 'SC', 'SD', 'SE', 'SG', 'SI', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'ST', 'SV', 'SY', 'SZ', 'TG', 'TH', 'TJ', 'TL' , 'TM', 'TN', 'TR', 'TT', 'TZ', 'UA', 'UG', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VN', 'YE', 'ZA', 'ZM', 'ZW'
         ];
 
         const existingFlags = [];
