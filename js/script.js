@@ -39,6 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadSettingsBtn = document.getElementById('loadSettings');
     const settingsFileInput = document.getElementById('settingsFileInput');
     
+    // 俱乐部名称相关元素
+    const clubNameInput = document.getElementById('clubName');
+    const clubFontSizeInput = document.getElementById('clubFontSize');
+    const clubFontSizeValue = document.getElementById('clubFontSizeValue');
+    const clubFontFamilySelect = document.getElementById('clubFontFamily');
+    const clubUseEnglishFontInput = document.getElementById('clubUseEnglishFont');
+    const clubEnglishFontSelect = document.getElementById('clubEnglishFont');
+    const clubColorInput = document.getElementById('clubColor');
+    const clubStrokeWidthInput = document.getElementById('clubStrokeWidth');
+    const clubStrokeWidthValue = document.getElementById('clubStrokeWidthValue');
+    const clubStrokeColorInput = document.getElementById('clubStrokeColor');
+    
     // 帮助弹窗相关元素
     const helpBtn = document.getElementById('helpBtn');
     const helpModal = document.getElementById('helpModal');
@@ -172,33 +184,27 @@ document.addEventListener('DOMContentLoaded', () => {
         Array.from(fontFamilySelect.options).forEach(opt => {
             const name = opt.value;
             const file = opt.getAttribute('data-file');
-            const url = `Fonts/CN/${encodeURIComponent(file)}`;
+            const url = `Fonts/CN/${file}`; // 移除encodeURIComponent，直接使用文件名
+            
+            // 只使用匹配的格式
             const fontFace = new FontFace(name, `url('${url}') format('truetype')`);
-            const fontFace2 = new FontFace(name, `url('${url}') format('opentype')`);
-            const fontFace3 = new FontFace(name, `url('${url}') format('embedded-opentype')`);
-            const fontFace4 = new FontFace(name, `url('${url}') format('woff')`);
-            const fontFace5 = new FontFace(name, `url('${url}') format('woff2')`);
-            promises.push(fontFace.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace2.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace3.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace4.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace5.load().then(loaded => document.fonts.add(loaded)));
+            promises.push(fontFace.load().then(loaded => document.fonts.add(loaded)).catch(err => {
+                console.warn(`中文字体加载失败: ${name}`, err);
+            }));
         });
+        
         Array.from(englishFontSelect.options).forEach(opt => {
             const name = opt.value;
             const file = opt.getAttribute('data-file');
-            const url = `Fonts/EN/${encodeURIComponent(file)}`;
+            const url = `Fonts/EN/${file}`; // 移除encodeURIComponent，直接使用文件名
+            
+            // 只使用匹配的格式
             const fontFace = new FontFace(name, `url('${url}') format('truetype')`);
-            const fontFace2 = new FontFace(name, `url('${url}') format('opentype')`);
-            const fontFace3 = new FontFace(name, `url('${url}') format('embedded-opentype')`);
-            const fontFace4 = new FontFace(name, `url('${url}') format('woff')`);
-            const fontFace5 = new FontFace(name, `url('${url}') format('woff2')`);
-            promises.push(fontFace.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace2.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace3.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace4.load().then(loaded => document.fonts.add(loaded)));
-            promises.push(fontFace5.load().then(loaded => document.fonts.add(loaded)));
+            promises.push(fontFace.load().then(loaded => document.fonts.add(loaded)).catch(err => {
+                console.warn(`英文字体加载失败: ${name}`, err);
+            }));
         });
+        
         Promise.all(promises).catch(err => console.error('内置字体加载失败', err));
     }
     loadBuiltInFonts();
@@ -435,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkPromises = fileList.map(code => {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.onload = () => {
+                img.onload = () => { 
                     if (flagNameMapping[code]) {
                         existingFlags.push({
                             name: flagNameMapping[code],
@@ -768,6 +774,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 名字颜色变化时更新预览
     nameColorInput.addEventListener('input', updateAllPreviews);
+
+    // 俱乐部相关事件监听器
+    clubNameInput.addEventListener('input', updateAllPreviews);
+    clubFontSizeInput.addEventListener('input', (e) => {
+        clubFontSizeValue.textContent = e.target.value + '%';
+        updateAllPreviews();
+    });
+    clubFontFamilySelect.addEventListener('change', updateAllPreviews);
+    clubUseEnglishFontInput.addEventListener('change', updateAllPreviews);
+    clubEnglishFontSelect.addEventListener('change', updateAllPreviews);
+    clubColorInput.addEventListener('input', updateAllPreviews);
+    clubStrokeWidthInput.addEventListener('input', (e) => {
+        clubStrokeWidthValue.textContent = e.target.value + 'px';
+        updateAllPreviews();
+    });
+    clubStrokeColorInput.addEventListener('input', updateAllPreviews);
 
     // 加载原始图片并初始化裁剪框
     function loadOriginalImage(src) {
@@ -1139,6 +1161,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             ctx.restore();
         }
+
+        // 绘制俱乐部名称（沿着图像边缘大弧形分布）
+        const clubName = clubNameInput.value.trim();
+        if (clubName) {
+            ctx.save();
+            
+            // 俱乐部字体设置
+            const clubFontSizePx = parseFloat(clubFontSizeInput.value) / 100 * Math.min(cw, ch);
+            const clubStrokeWidth = parseFloat(clubStrokeWidthInput.value);
+            
+            // 计算文字信息
+            const clubCharWidths = [];
+            const clubCharFonts = [];
+            let clubTotalW = 0;
+            
+            for (const chStr of clubName) {
+                const isEng = clubUseEnglishFontInput.checked && /^[\x00-\x7F]$/.test(chStr);
+                const fm = isEng ? `${clubFontSizePx}px ${clubEnglishFontSelect.value}` : `${clubFontSizePx}px ${clubFontFamilySelect.value}`;
+                ctx.font = fm;
+                clubCharFonts.push(fm);
+                const wCh = ctx.measureText(chStr).width;
+                clubCharWidths.push(wCh);
+                clubTotalW += wCh;
+            }
+            
+            // 画布实际内容区域
+            const contentX = bw;
+            const contentY = bw;
+            const contentW = w - bw * 2;
+            const contentH = h - bw * 2;
+            
+            // 使用新的边缘弧形绘制方法
+            drawEdgeArcText(ctx, clubName, clubCharFonts, clubCharWidths,
+                           contentX, contentY, contentW, contentH, radius - bw,
+                           clubColorInput.value, clubStrokeColorInput.value, clubStrokeWidth);
+            
+            ctx.restore();
+        }
     }
 
     // 绘制圆角矩形
@@ -1154,6 +1214,224 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.lineTo(x, y + r);
         ctx.arcTo(x, y, x + r, y, r);
         ctx.closePath();
+    }
+
+    // 绘制沿图像边缘的弧形文字
+    function drawEdgeArcText(ctx, text, fonts, charWidths, x, y, w, h, cornerRadius, fillColor, strokeColor, strokeWidth) {
+        const margin = 3; // 减小margin使文字更贴近边缘
+        
+        // 计算总的边缘路径长度（包括四个圆角）
+        const straightEdgeLength = 2 * (w - 2 * cornerRadius) + 2 * (h - 2 * cornerRadius); // 四条直边
+        const cornerArcLength = 4 * (Math.PI * cornerRadius / 2); // 四个90度圆弧
+        const totalPerimeter = straightEdgeLength + cornerArcLength;
+        
+        // 计算文字总宽度
+        const totalTextWidth = charWidths.reduce((sum, width) => sum + width, 0);
+        
+        // 改进字符间距算法 - 基于可用空间动态调整
+        const avgCharWidth = totalTextWidth / text.length;
+        const availableSpace = totalPerimeter * 0.6; // 使用边缘长度的60%来避免过于密集
+        let charSpacing;
+        
+        if (totalTextWidth < availableSpace) {
+            // 文字较短时，使用合理的固定间距
+            charSpacing = Math.max(avgCharWidth * 1.2, 2);
+        } else {
+            // 文字较长时，压缩间距以适应边缘
+            charSpacing = availableSpace / text.length;
+        }
+        
+        // 右上角45度位置作为起始点（在整个边缘路径上的位置）
+        // 右上角圆弧的中点位置
+        const rightTopCornerStart = w - 2 * cornerRadius + Math.PI * cornerRadius / 4; // 右上角圆弧中点
+        
+        // 计算文字在路径上的起始位置（以文字中心为准）
+        const textPathLength = text.length * charSpacing;
+        const startPosition = (rightTopCornerStart - textPathLength / 2 + totalPerimeter) % totalPerimeter;
+        
+        // 为每个字符计算在边缘路径上的位置
+        let currentPosition = startPosition;
+        
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            
+            // 根据位置计算字符的坐标和角度
+            const {x: charX, y: charY, angle: rotationAngle} = getPositionOnPerimeter(
+                currentPosition, x, y, w, h, cornerRadius, margin
+            );
+            
+            ctx.save();
+            ctx.font = fonts[i];
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.translate(charX, charY);
+            ctx.rotate(rotationAngle);
+            
+            // 绘制文字描边
+            if (strokeWidth > 0) {
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = strokeWidth;
+                ctx.strokeText(char, 0, 0);
+            }
+            
+            // 绘制文字填充
+            ctx.fillStyle = fillColor;
+            ctx.fillText(char, 0, 0);
+            
+            ctx.restore();
+            
+            currentPosition = (currentPosition + charSpacing) % totalPerimeter;
+        }
+    }
+    
+    // 根据在边缘路径上的位置计算实际坐标和角度
+    function getPositionOnPerimeter(position, x, y, w, h, cornerRadius, margin) {
+        const straightEdgeLength = 2 * (w - 2 * cornerRadius) + 2 * (h - 2 * cornerRadius);
+        const cornerArcLength = 4 * (Math.PI * cornerRadius / 2);
+        const totalPerimeter = straightEdgeLength + cornerArcLength;
+        
+        // 标准化位置（0到totalPerimeter）
+        position = ((position % totalPerimeter) + totalPerimeter) % totalPerimeter;
+        
+        let currentLength = 0;
+        
+        // 上边缘（从左到右，不包括圆角）
+        const topEdgeLength = w - 2 * cornerRadius;
+        if (position <= currentLength + topEdgeLength) {
+            const offset = position - currentLength;
+            return {
+                x: x + cornerRadius + offset,
+                y: y + margin,
+                angle: 0 // 水平文字，正向
+            };
+        }
+        currentLength += topEdgeLength;
+        
+        // 右上角圆弧
+        const rightTopArcLength = Math.PI * cornerRadius / 2;
+        if (position <= currentLength + rightTopArcLength) {
+            const offset = position - currentLength;
+            const arcAngle = offset / cornerRadius; // 从0到π/2
+            const centerX = x + w - cornerRadius;
+            const centerY = y + cornerRadius;
+            
+            // 圆弧上的点（从上边缘到右边缘）
+            const pointX = centerX + Math.cos(-Math.PI/2 + arcAngle) * (cornerRadius - margin);
+            const pointY = centerY + Math.sin(-Math.PI/2 + arcAngle) * (cornerRadius - margin);
+            
+            // 切线角度（垂直于半径方向）
+            const tangentAngle = -Math.PI/2 + arcAngle + Math.PI/2;
+            
+            return {
+                x: pointX,
+                y: pointY,
+                angle: tangentAngle
+            };
+        }
+        currentLength += rightTopArcLength;
+        
+        // 右边缘（从上到下，不包括圆角）
+        const rightEdgeLength = h - 2 * cornerRadius;
+        if (position <= currentLength + rightEdgeLength) {
+            const offset = position - currentLength;
+            return {
+                x: x + w - margin,
+                y: y + cornerRadius + offset,
+                angle: Math.PI / 2 // 垂直文字，向下
+            };
+        }
+        currentLength += rightEdgeLength;
+        
+        // 右下角圆弧
+        const rightBottomArcLength = Math.PI * cornerRadius / 2;
+        if (position <= currentLength + rightBottomArcLength) {
+            const offset = position - currentLength;
+            const arcAngle = offset / cornerRadius; // 从0到π/2
+            const centerX = x + w - cornerRadius;
+            const centerY = y + h - cornerRadius;
+            
+            // 圆弧上的点（从右边缘到下边缘）
+            const pointX = centerX + Math.cos(0 + arcAngle) * (cornerRadius - margin);
+            const pointY = centerY + Math.sin(0 + arcAngle) * (cornerRadius - margin);
+            
+            // 切线角度
+            const tangentAngle = 0 + arcAngle + Math.PI/2;
+            
+            return {
+                x: pointX,
+                y: pointY,
+                angle: tangentAngle
+            };
+        }
+        currentLength += rightBottomArcLength;
+        
+        // 下边缘（从右到左，不包括圆角）
+        const bottomEdgeLength = w - 2 * cornerRadius;
+        if (position <= currentLength + bottomEdgeLength) {
+            const offset = position - currentLength;
+            return {
+                x: x + w - cornerRadius - offset,
+                y: y + h - margin,
+                angle: Math.PI // 水平文字，反向
+            };
+        }
+        currentLength += bottomEdgeLength;
+        
+        // 左下角圆弧
+        const leftBottomArcLength = Math.PI * cornerRadius / 2;
+        if (position <= currentLength + leftBottomArcLength) {
+            const offset = position - currentLength;
+            const arcAngle = offset / cornerRadius; // 从0到π/2
+            const centerX = x + cornerRadius;
+            const centerY = y + h - cornerRadius;
+            
+            // 圆弧上的点（从下边缘到左边缘）
+            const pointX = centerX + Math.cos(Math.PI/2 + arcAngle) * (cornerRadius - margin);
+            const pointY = centerY + Math.sin(Math.PI/2 + arcAngle) * (cornerRadius - margin);
+            
+            // 切线角度
+            const tangentAngle = Math.PI/2 + arcAngle + Math.PI/2;
+            
+            return {
+                x: pointX,
+                y: pointY,
+                angle: tangentAngle
+            };
+        }
+        currentLength += leftBottomArcLength;
+        
+        // 左边缘（从下到上，不包括圆角）
+        const leftEdgeLength = h - 2 * cornerRadius;
+        if (position <= currentLength + leftEdgeLength) {
+            const offset = position - currentLength;
+            return {
+                x: x + margin,
+                y: y + h - cornerRadius - offset,
+                angle: -Math.PI / 2 // 垂直文字，向上
+            };
+        }
+        currentLength += leftEdgeLength;
+        
+        // 左上角圆弧
+        const leftTopArcLength = Math.PI * cornerRadius / 2;
+        const offset = position - currentLength;
+        const arcAngle = offset / cornerRadius; // 从0到π/2
+        const centerX = x + cornerRadius;
+        const centerY = y + cornerRadius;
+        
+        // 圆弧上的点（从左边缘到上边缘）
+        const pointX = centerX + Math.cos(Math.PI + arcAngle) * (cornerRadius - margin);
+        const pointY = centerY + Math.sin(Math.PI + arcAngle) * (cornerRadius - margin);
+        
+        // 切线角度
+        const tangentAngle = Math.PI + arcAngle + Math.PI/2;
+        
+        return {
+            x: pointX,
+            y: pointY,
+            angle: tangentAngle
+        };
     }
 
     // 调整导出尺寸
@@ -1240,11 +1518,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const settings = {
             playerName: playerNameInput.value,
             playerId: playerIdInput.value,
+            clubName: clubNameInput.value,
             fontSize: fontSizeInput.value,
             fontFamily: fontFamilySelect.value,
             nameColor: nameColorInput.value,
             useEnglishFont: useEnglishFontInput.checked,
             englishFont: englishFontSelect.value,
+            clubFontSize: clubFontSizeInput.value,
+            clubFontFamily: clubFontFamilySelect.value,
+            clubUseEnglishFont: clubUseEnglishFontInput.checked,
+            clubEnglishFont: clubEnglishFontSelect.value,
+            clubColor: clubColorInput.value,
+            clubStrokeWidth: clubStrokeWidthInput.value,
+            clubStrokeColor: clubStrokeColorInput.value,
             bgType: bgTypeSelect.value,
             bgColor: bgColorInput.value,
             bgGradientStart: bgGradientStart.value,
@@ -1275,6 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function applySettings(settings) {
         playerNameInput.value = settings.playerName || '';
         playerIdInput.value = settings.playerId || '';
+        clubNameInput.value = settings.clubName || '';
         if (settings.fontSize) {
             fontSizeInput.value = settings.fontSize;
             fontSizeValue.textContent = settings.fontSize + '%';
@@ -1283,6 +1570,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settings.nameColor) nameColorInput.value = settings.nameColor;
         if (typeof settings.useEnglishFont === 'boolean') useEnglishFontInput.checked = settings.useEnglishFont;
         if (settings.englishFont) englishFontSelect.value = settings.englishFont;
+        if (settings.clubFontSize) {
+            clubFontSizeInput.value = settings.clubFontSize;
+            clubFontSizeValue.textContent = settings.clubFontSize + '%';
+        }
+        if (settings.clubFontFamily) clubFontFamilySelect.value = settings.clubFontFamily;
+        if (typeof settings.clubUseEnglishFont === 'boolean') clubUseEnglishFontInput.checked = settings.clubUseEnglishFont;
+        if (settings.clubEnglishFont) clubEnglishFontSelect.value = settings.clubEnglishFont;
+        if (settings.clubColor) clubColorInput.value = settings.clubColor;
+        if (settings.clubStrokeWidth) {
+            clubStrokeWidthInput.value = settings.clubStrokeWidth;
+            clubStrokeWidthValue.textContent = settings.clubStrokeWidth + 'px';
+        }
+        if (settings.clubStrokeColor) clubStrokeColorInput.value = settings.clubStrokeColor;
         if (settings.bgType) {
             bgTypeSelect.value = settings.bgType;
             bgTypeSelect.dispatchEvent(new Event('change'));
