@@ -467,3 +467,57 @@ input[type='color']::-webkit-color-swatch {
 #helpContent a:hover {
   text-decoration: underline;
 }
+
+/* 下拉列表优化 */
+select {
+    /* 禁用自动滚动到选中项 */
+    scroll-behavior: auto;
+    /* 确保下拉列表有合适的最大高度 */
+    max-height: 200px;
+}
+
+/* 国旗下拉列表特殊样式 */
+#bgPreset {
+    /* 防止鼠标悬停时的自动滚动 */
+    overflow-y: auto;
+    /* 平滑的滚动条 */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f9f9f9;
+}
+
+/* Webkit浏览器的滚动条样式 */
+#bgPreset::-webkit-scrollbar {
+    width: 8px;
+}
+
+#bgPreset::-webkit-scrollbar-track {
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+#bgPreset::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+#bgPreset::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* 防止下拉列表选项的自动高亮导致滚动 */
+#bgPreset option {
+    padding: 4px 8px;
+    line-height: 1.2;
+}
+
+#bgPreset optgroup {
+    font-weight: bold;
+    color: #4a6fee;
+    padding: 2px 8px;
+}
+
+/* 确保下拉列表的z-index足够高 */
+#bgPreset {
+    position: relative;
+    z-index: 1000;
+}
